@@ -3,6 +3,7 @@ package co.com.bancolombia.usecase;
 import co.com.bancolombia.model.user.Bootcamp;
 import co.com.bancolombia.model.user.User;
 import co.com.bancolombia.model.user.gateway.BootcampGateway;
+import co.com.bancolombia.model.user.gateway.PublisherGateway;
 import co.com.bancolombia.model.user.gateway.UserGateway;
 import co.com.bancolombia.usecase.command.EnrollUserInBootcampCommand;
 import co.com.bancolombia.usecase.exception.BussinessException;
@@ -25,10 +26,12 @@ public class EnrollUserInBootcampUseCase {
 
   private final UserGateway userGateway;
   private final BootcampGateway bootcampGateway;
+  private final PublisherGateway publisherGateway;
 
-  public EnrollUserInBootcampUseCase(UserGateway userGateway, BootcampGateway bootcampGateway) {
+  public EnrollUserInBootcampUseCase(UserGateway userGateway, BootcampGateway bootcampGateway, PublisherGateway publisherGateway) {
     this.userGateway = userGateway;
     this.bootcampGateway = bootcampGateway;
+    this.publisherGateway = publisherGateway;
   }
 
   public Mono<EnrollmentResponse> execute(EnrollUserInBootcampCommand command) {
@@ -40,10 +43,14 @@ public class EnrollUserInBootcampUseCase {
               .then(validateUserNotAlreadyEnrolled(command.getUserId(), command.getBootcampId()))
               .then(validateNoScheduleConflict(command.getUserId(), bootcamp))
               .then(userGateway.enrollUserInBootcamp(command.getUserId(), command.getBootcampId()))
-              .map(updatedUser -> new EnrollmentResponse(
-                mapToUserResponse(updatedUser),
-                mapToBootcampResponse(bootcamp)
-              ))
+              .flatMap(updatedUser -> 
+                getBootcampEnrollmentCount(command.getBootcampId())
+                  .doOnNext(count -> publisherGateway.publish(command.getBootcampId(), count))
+                  .then(Mono.just(new EnrollmentResponse(
+                    mapToUserResponse(updatedUser),
+                    mapToBootcampResponse(bootcamp)
+                  )))
+              )
           )
       );
   }
@@ -114,7 +121,14 @@ public class EnrollUserInBootcampUseCase {
       bootcamp.getName().getValue(),
       bootcamp.getDescription().getValue(),
       bootcamp.getLaunchDate().getValue(),
-      bootcamp.getDuration().getValue()
+      bootcamp.getDuration().getValue(),
+      null
     );
+  }
+
+  private Mono<Integer> getBootcampEnrollmentCount(Long bootcampId) {
+    return userGateway.findByBootcampId(bootcampId)
+      .count()
+      .map(Long::intValue);
   }
 }

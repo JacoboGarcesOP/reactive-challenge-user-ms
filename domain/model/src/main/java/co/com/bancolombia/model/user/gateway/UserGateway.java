@@ -12,4 +12,5 @@ public interface UserGateway {
   Mono<Boolean> existsUserBootcampRelation(Long userId, Long bootcampId);
   Mono<Long> countUserBootcamps(Long userId);
   Flux<Long> findUserBootcampIds(Long userId);
+  Mono<Long> findBootcampIdWithMostUsers();
 }

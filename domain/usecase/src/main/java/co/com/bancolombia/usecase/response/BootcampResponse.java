@@ -1,6 +1,7 @@
 package co.com.bancolombia.usecase.response;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class BootcampResponse {
   private final Long id;
@@ -8,13 +9,15 @@ public class BootcampResponse {
   private final String description;
   private final LocalDate launchDate;
   private final Integer duration;
+  private final List<CapacityResponse> capacities;
 
-  public BootcampResponse(Long id, String name, String description, LocalDate launchDate, Integer duration) {
+  public BootcampResponse(Long id, String name, String description, LocalDate launchDate, Integer duration, List<CapacityResponse> capacities) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.launchDate = launchDate;
     this.duration = duration;
+    this.capacities = capacities;
   }
 
   public Long getId() {
@@ -35,5 +38,9 @@ public class BootcampResponse {
 
   public Integer getDuration() {
     return duration;
+  }
+
+  public List<CapacityResponse> getCapacities() {
+    return capacities;
   }
 }

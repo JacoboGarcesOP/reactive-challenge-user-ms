@@ -79,4 +79,23 @@ public class UserRepositoryAdapter implements UserGateway {
     return userBootcampRepository.findByUserId(userId)
         .map(link -> link.getBootcampId());
   }
+
+  @Override
+  public Mono<Long> findBootcampIdWithMostUsers() {
+    return userBootcampRepository.findAll()
+        .groupBy(UserBootcampEntity::getBootcampId)
+        .flatMap(group -> group.count().map(count -> new BootcampCount(group.key(), count)))
+        .sort((a, b) -> Long.compare(b.count, a.count))
+        .next()
+        .map(bc -> bc.bootcampId);
+  }
+
+  private static class BootcampCount {
+    final Long bootcampId;
+    final Long count;
+    BootcampCount(Long bootcampId, Long count) {
+      this.bootcampId = bootcampId;
+      this.count = count;
+    }
+  }
 }
