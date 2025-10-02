@@ -20,6 +20,8 @@ spring:
       max-size: 20
       max-idle-time: "30m"
       validation-query: "SELECT 1"
+  rabbitmq:
+    addresses: ${RABBIT_URL}
 management:
   endpoints:
     web:
@@ -38,6 +40,10 @@ adapter:
   restconsumer:
     timeout: 5000
     url: ${BOOTCAMP_ENDPOINT}
+  rabbit:
+    queue: ${RABBIT_QUEUE}
+    exchange: ${RABBIT_TOPIC}
+    routingkey: ${RABBIT_ROUTING_KEY}
 resilience4j:
   circuitbreaker:
     instances:

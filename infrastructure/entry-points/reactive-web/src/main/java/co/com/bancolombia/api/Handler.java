@@ -7,6 +7,7 @@ import co.com.bancolombia.model.user.exception.DomainException;
 import co.com.bancolombia.usecase.CreateUserUseCase;
 import co.com.bancolombia.usecase.EnrollUserInBootcampUseCase;
 import co.com.bancolombia.usecase.command.CreateUserCommand;
+import co.com.bancolombia.usecase.FindBootcampWithMostUsersUseCase;
 import co.com.bancolombia.usecase.command.EnrollUserInBootcampCommand;
 import co.com.bancolombia.usecase.exception.BussinessException;
 import jakarta.validation.ConstraintViolation;
@@ -36,6 +37,7 @@ public class Handler {
   private final CreateUserUseCase createUserUseCase;
   private final EnrollUserInBootcampUseCase enrollUserInBootcampUseCase;
   private final Validator validator;
+  private final FindBootcampWithMostUsersUseCase findBootcampWithMostUsersUseCase;
 
   public Mono<ServerResponse> createUser(ServerRequest serverRequest) {
     return serverRequest.bodyToMono(CreateUserRequest.class)
@@ -63,6 +65,13 @@ public class Handler {
       .onErrorResume(BussinessException.class, this::handleBusinessException)
       .onErrorResume(org.springframework.web.server.ServerWebInputException.class, this::handleServerWebInputException)
       .onErrorResume(org.springframework.web.server.UnsupportedMediaTypeStatusException.class, this::handleUnsupportedMediaTypeException)
+      .onErrorResume(Exception.class, this::handleGenericException)
+      .doOnError(error -> log.error(GENERIC_ERROR_MESSAGE, error));
+  }
+
+  public Mono<ServerResponse> findBootcampWithMostUsers(ServerRequest serverRequest) {
+    return findBootcampWithMostUsersUseCase.execute()
+      .flatMap(this::buildSuccessResponse)
       .onErrorResume(Exception.class, this::handleGenericException)
       .doOnError(error -> log.error(GENERIC_ERROR_MESSAGE, error));
   }
