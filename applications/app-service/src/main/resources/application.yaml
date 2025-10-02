@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8083
 spring:
   application:
     name: "user-ms"
@@ -11,6 +11,15 @@ spring:
       path: "/h2"
   profiles:
     include: null
+  r2dbc:
+    url: "r2dbc:postgresql://${DATABASE_HOST}:5432/${DATABASE_NAME}?currentSchema=${DATABASE_SCHEMA}&sslMode=require"
+    username: "${DATABASE_USER}"
+    password: "${DATABASE_PASSWORD}"
+    pool:
+      initial-size: 10
+      max-size: 20
+      max-idle-time: "30m"
+      validation-query: "SELECT 1"
 management:
   endpoints:
     web:
@@ -20,5 +29,24 @@ management:
     health:
       probes:
         enabled: true
+  health:
+    circuitbreakers:
+      enabled: true
 cors:
-  allowed-origins: "http://localhost:4200,http://localhost:8080"
+  allowed-origins: "${ALLOWED_ORIGINS}"
+adapter:
+  restconsumer:
+    timeout: 5000
+    url: ${BOOTCAMP_ENDPOINT}
+resilience4j:
+  circuitbreaker:
+    instances:
+      findById:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: "2s"
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        waitDurationInOpenState: "10s"
