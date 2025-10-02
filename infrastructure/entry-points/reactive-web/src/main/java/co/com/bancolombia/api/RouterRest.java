@@ -225,4 +225,63 @@ public class RouterRest {
   public RouterFunction<ServerResponse> enrollUserInBootcampRouter(Handler handler) {
     return route(POST(BASE_URL + "/users/enroll"), handler::enrollUserInBootcamp);
   }
+
+  @Bean
+  @RouterOperation(
+    path = "/v1/api/bootcamps/most-users",
+    method = org.springframework.web.bind.annotation.RequestMethod.GET,
+    operation = @Operation(
+      operationId = "findBootcampWithMostUsers",
+      summary = "Consultar bootcamp con más usuarios",
+      description = "Retorna el bootcamp con mayor número de usuarios, incluyendo capacidades y tecnologías, y la lista de usuarios asociados.",
+      tags = {"Bootcamp Analytics"},
+      responses = {
+        @ApiResponse(
+          responseCode = "200",
+          description = "Consulta exitosa",
+          content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(description = "Agregación de bootcamp con usuarios"),
+            examples = @ExampleObject(
+              name = "Success Response",
+              summary = "Bootcamp con más usuarios",
+              value = "{\n" +
+                "  \"bootcamp\": {\n" +
+                "    \"id\": 5,\n" +
+                "    \"name\": \"Java Bootcamp\",\n" +
+                "    \"description\": \"Aprende Java desde cero\",\n" +
+                "    \"launchDate\": \"2024-01-15\",\n" +
+                "    \"duration\": 12,\n" +
+                "    \"capacities\": [\n" +
+                "      {\n" +
+                "        \"id\": 1,\n" +
+                "        \"name\": \"Backend\",\n" +
+                "        \"description\": \"Servicios REST\",\n" +
+                "        \"technologies\": [\n" +
+                "          { \"id\": 10, \"name\": \"Spring\", \"description\": \"Spring Framework\" }\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  },\n" +
+                "  \"users\": [\n" +
+                "    { \"id\": 1, \"name\": \"Alice\", \"email\": \"alice@example.com\" }\n" +
+                "  ]\n" +
+                "}"
+            )
+          )
+        ),
+        @ApiResponse(
+          responseCode = "500",
+          description = "Error interno del servidor",
+          content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = ErrorResponse.class)
+          )
+        )
+      }
+    )
+  )
+  public RouterFunction<ServerResponse> findBootcampWithMostUsersRouter(Handler handler) {
+    return route(GET(BASE_URL + "/bootcamps/most-users"), handler::findBootcampWithMostUsers);
+  }
 }

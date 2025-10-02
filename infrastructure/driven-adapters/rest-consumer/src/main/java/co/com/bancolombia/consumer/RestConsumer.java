@@ -25,12 +25,33 @@ public class RestConsumer implements BootcampGateway {
       .onStatus(HttpStatusCode::is4xxClientError, this::map4xx)
       .onStatus(HttpStatusCode::is5xxServerError, this::map5xx)
       .bodyToMono(ObjectResponse.class)
-      .map(resp -> new Bootcamp(
-        resp.getBootcampId(),
-        resp.getName(),
-        resp.getDescription(),
-        resp.getLaunchDate(),
-        resp.getDuration()));
+      .map(resp -> {
+        Bootcamp bootcamp = new Bootcamp(
+          resp.getBootcampId(),
+          resp.getName(),
+          resp.getDescription(),
+          resp.getLaunchDate(),
+          resp.getDuration()
+        );
+        if (resp.getCapacities() != null) {
+          bootcamp.setCapacities(
+            resp.getCapacities().stream()
+              .map(c -> new co.com.bancolombia.model.bootcamp.Capacity(
+                c.getCapacityId(),
+                c.getName(),
+                c.getDescription(),
+                c.getTechnologies() == null ? java.util.List.of() :
+                  c.getTechnologies().stream()
+                    .map(t -> new co.com.bancolombia.model.bootcamp.Technology(
+                      t.getTechnologyId(), t.getName(), t.getDescription()
+                    ))
+                    .toList()
+              ))
+              .toList()
+          );
+        }
+        return bootcamp;
+      });
   }
 
   private Mono<? extends Throwable> map4xx(ClientResponse response) {

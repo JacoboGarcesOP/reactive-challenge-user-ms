@@ -3,6 +3,7 @@ package co.com.bancolombia.api;
 import co.com.bancolombia.api.request.EnrollUserInBootcampRequest;
 import co.com.bancolombia.usecase.CreateUserUseCase;
 import co.com.bancolombia.usecase.EnrollUserInBootcampUseCase;
+import co.com.bancolombia.usecase.FindBootcampWithMostUsersUseCase;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,12 +41,15 @@ class RouterRestTest {
       new co.com.bancolombia.usecase.response.UserResponse(1L, "Test User", "test@example.com");
     co.com.bancolombia.usecase.response.BootcampResponse bootcampResponse = 
       new co.com.bancolombia.usecase.response.BootcampResponse(5L, "Test Bootcamp", "Test Description", 
-        java.time.LocalDate.now().plusDays(1), 10);
+        java.time.LocalDate.now().plusDays(1), 10, null);
     
     when(enrollUserInBootcampUseCase.execute(any())).thenReturn(
       Mono.just(new co.com.bancolombia.usecase.response.EnrollmentResponse(userResponse, bootcampResponse))
     );
   }
+
+  @MockBean
+  private FindBootcampWithMostUsersUseCase findBootcampWithMostUsersUseCase;
 
   @Test
   void shouldReturnBadRequestWhenUserIdIsNull() throws Exception {
@@ -201,14 +205,21 @@ class RouterRestTest {
     @Bean
     public Handler handler(CreateUserUseCase createUserUseCase, 
                           EnrollUserInBootcampUseCase enrollUserInBootcampUseCase, 
-                          Validator validator) {
-      return new Handler(createUserUseCase, enrollUserInBootcampUseCase, validator);
+                          Validator validator,
+                          FindBootcampWithMostUsersUseCase findBootcampWithMostUsersUseCase) {
+      return new Handler(createUserUseCase, enrollUserInBootcampUseCase, validator, findBootcampWithMostUsersUseCase);
     }
     
     @Bean
     public org.springframework.web.reactive.function.server.RouterFunction<org.springframework.web.reactive.function.server.ServerResponse> enrollUserInBootcampRouter(Handler handler) {
       RouterRest routerRest = new RouterRest();
       return routerRest.enrollUserInBootcampRouter(handler);
+    }
+
+    @Bean
+    public org.springframework.web.reactive.function.server.RouterFunction<org.springframework.web.reactive.function.server.ServerResponse> findBootcampWithMostUsersRouter(Handler handler) {
+      RouterRest routerRest = new RouterRest();
+      return routerRest.findBootcampWithMostUsersRouter(handler);
     }
     
     @Bean

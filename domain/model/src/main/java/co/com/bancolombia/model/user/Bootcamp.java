@@ -1,5 +1,6 @@
 package co.com.bancolombia.model.user;
 
+import co.com.bancolombia.model.bootcamp.Capacity;
 import co.com.bancolombia.model.user.values.Description;
 import co.com.bancolombia.model.user.values.Duration;
 import co.com.bancolombia.model.user.values.Id;
@@ -7,6 +8,7 @@ import co.com.bancolombia.model.user.values.LaunchDate;
 import co.com.bancolombia.model.user.values.Name;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class Bootcamp {
   private Id id;
@@ -14,6 +16,7 @@ public class Bootcamp {
   private Description description;
   private LaunchDate launchDate;
   private Duration duration;
+  private List<Capacity> capacities;
 
   public Bootcamp(Long id, String name, String description, LocalDate launchDate, Integer duration) {
     this.id = new Id(id);
@@ -68,5 +71,13 @@ public class Bootcamp {
 
   public void setDuration(Duration duration) {
     this.duration = duration;
+  }
+
+  public List<Capacity> getCapacities() {
+    return capacities;
+  }
+
+  public void setCapacities(List<Capacity> capacities) {
+    this.capacities = capacities;
   }
 }
